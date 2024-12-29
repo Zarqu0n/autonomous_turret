@@ -10,6 +10,11 @@ setup(
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', ['launch/autonomous_turret_launch.py']),
+        ('share/' + package_name + '/launch', ['launch/robot_launch.py']),
+        ('share/' + package_name + '/launch', ['launch/gazebo_launch.py']),
+        ('share/' + package_name + '/models/turret', ['models/turret/turret.urdf']),
+        ('share/' + package_name + '/rviz', ['rviz/turret.rviz']),
+        ('share/' + package_name + '/config', ['config/bridge.yaml']),
     ],
     install_requires=[
         'setuptools',
