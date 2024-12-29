@@ -1,50 +1,54 @@
+#!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge
+from sensor_msgs.msg import LaserScan
+from std_msgs.msg import Bool
 import cv2
+import numpy as np
 
-class TrackingNode(Node):
+
+class ColorWindowNode(Node):
     def __init__(self):
-        super().__init__('tracking_node')
-        self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 10)
+        super().__init__('color_window_node')
         self.subscription = self.create_subscription(
-            Image,
-            '/camera/image_raw',
-            self.image_callback,
+            LaserScan,
+            '/main/scan/sim',
+            self.listener_callback,
             10
         )
-        self.bridge = CvBridge()
-        self.get_logger().info('Tracking Node Initialized')
+        self.publisher = self.create_publisher(Bool, '/collision_detected', 10)
+        self.hit_detected = False
+        self.create_timer(0.1, self.update_window)
 
-    def image_callback(self, msg):
-        try:
-            # Görüntüyü OpenCV formatına çevir
-            cv_image = self.bridge.imgmsg_to_cv2(msg, 'bgr8')
-            
-            # Görüntü işleme algoritmaları (örnek)
-            gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
-            _, thresh = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY)
+    def listener_callback(self, msg: LaserScan):
+        self.hit_detected = any(distance < 5.0 for distance in msg.ranges)
+        self.publish_collision_status()
 
-            # Hedef tespiti
-            # (Buraya özel hedef algılama algoritmanızı yazabilirsiniz.)
-            
-            # Taret hareketi için kontrol komutu oluştur
-            twist = Twist()
-            twist.linear.x = 0.0  # Hedefe göre ayarlayın
-            twist.angular.z = 0.1  # Hedefe göre ayarlayın
-            
-            self.publisher_.publish(twist)
-        except Exception as e:
-            self.get_logger().error(f'Error processing image: {str(e)}')
+    def publish_collision_status(self):
+        msg = Bool()
+        msg.data = self.hit_detected
+        self.publisher.publish(msg)
+
+    def update_window(self):
+        color = (0, 255, 0) if not self.hit_detected else (0, 0, 255)
+        image = np.zeros((500, 500, 3), dtype=np.uint8)
+        image[:] = color
+        cv2.imshow("Color Window", image)
+        cv2.waitKey(1)
+
 
 def main(args=None):
     rclpy.init(args=args)
-    node = TrackingNode()
+    node = ColorWindowNode()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        pass
-    node.destroy_node()
-    rclpy.shutdown()
+        node.get_logger().info('Shutting down...')
+    finally:
+        cv2.destroyAllWindows()
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()

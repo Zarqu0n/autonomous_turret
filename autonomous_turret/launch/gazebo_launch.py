@@ -48,24 +48,6 @@ def launch_gz(context, *args, **kwargs):
     ign_version = LaunchConfiguration("ign_version").perform(context)
     debugger = LaunchConfiguration("debugger").perform(context)
     on_exit_shutdown = LaunchConfiguration("on_exit_shutdown").perform(context)
-    # prefix=LaunchConfiguration("prefix").perform(context)
-    # bridge_config = os.path.join(
-    #     get_package_share_directory("robot_ignition"),
-    #     "config",
-    #     "bridge.yaml",
-    # )
-
-
-    # bridge_config_prefix = ReplaceString(
-    #     source_file=bridge_config,
-    #     replacements={
-    #         "prefix": prefix,
-    #     },
-    # )
-
-    # bridge_params=bridge_config_prefix.perform(context)
-    
-    # print(bridge_params)
 
     if not len(gz_args) and len(ign_args):
         print("ign_args is deprecated, migrate to gz_args!")
@@ -100,16 +82,6 @@ def launch_gz(context, *args, **kwargs):
             prefix=debug_prefix,
             on_exit=on_exit,
         ),
-        # Node(
-        #     package="ros_gz_bridge",
-        #     executable="parameter_bridge",
-        #     arguments=[
-        #         "--ros-args",
-        #         "-p",
-        #         f"config_file:={bridge_params}",
-        #     ],
-        #     output="screen",
-        # ),
     ]
 
 
@@ -122,12 +94,6 @@ def generate_launch_description():
                 default_value="",
                 description="Arguments to be passed to Gazebo Sim",
             ),
-            # Gazebo Sim's major version
-            # DeclareLaunchArgument(
-            #     "gz_version",
-            #     default_value="@GZ_SIM_VER@",
-            #     description="Gazebo Sim's major version",
-            # ),
             # TODO(CH3): Deprecated. Remove on tock.
             DeclareLaunchArgument(
                 "ign_args",
