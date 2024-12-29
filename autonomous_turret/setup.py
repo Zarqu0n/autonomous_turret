@@ -16,6 +16,7 @@ setup(
         ('share/' + package_name + '/config', ['config/bridge.yaml']),
         ('share/' + package_name + '/config', ['config/controller.yaml']),
         ('share/' + package_name + '/worlds', ['worlds/turret.sdf']),
+        ('share/' + package_name + '/resource', ['resource/buzzer.mp3']),
     ],
     install_requires=[
         'setuptools',
